@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'signin_page.dart';
+import 'register_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,6 +18,10 @@ class MyApp extends StatelessWidget {
       title: 'Golden Bowl',
       theme: ThemeData.dark(),
       home: const HomePage(),
+      routes: {
+        '/signin': (context) => const SignInPage(),
+        '/register': (context) => const RegisterPage(),
+      },
     );
   }
 }
@@ -32,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   List items = [];
 
   final Map<String, String> apiUrls = {
-    'All Items': '',
+    'All Items': 'http://localhost:3000/api/all',
     'Tea': 'http://localhost:3000/api/tea',
     'Snacks': 'http://localhost:3000/api/snacks',
     'Meals': 'http://localhost:3000/api/meals',
@@ -46,25 +52,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchItems() async {
-    if (apiUrls[selectedCategory]!.isEmpty) {
+    final url = apiUrls[selectedCategory]!;
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
       setState(() {
-        items = [];
+        items = json.decode(response.body);
       });
-      return;
-    }
-
-    try {
-      final response = await http.get(Uri.parse(apiUrls[selectedCategory]!));
-      if (response.statusCode == 200) {
-        setState(() {
-          items = json.decode(response.body);
-        });
-      } else {
-        setState(() {
-          items = [];
-        });
-      }
-    } catch (e) {
+    } else {
       setState(() {
         items = [];
       });
@@ -78,52 +72,63 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Container(
-              height: 100,
-              color: Colors.black87,
-              alignment: Alignment.center,
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.black87,
+                border: Border(bottom: BorderSide(color: Colors.white54)),
+              ),
               child: const Text(
                 'Golden Bowl',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            ListTile(title: const Text('Home'), onTap: () {}),
-            ListTile(title: const Text('Carts'), onTap: () {}),
-            ListTile(title: const Text('Add Items'), onTap: () {}),
-            ListTile(title: const Text('Orders'), onTap: () {}),
-            ListTile(title: const Text('Update Item'), onTap: () {}),
+            Expanded(
+              child: ListView(
+                children: [
+                  ListTile(title: const Text('Home'), onTap: () {}),
+                  ListTile(title: const Text('Carts'), onTap: () {}),
+                  ListTile(title: const Text('Add Items'), onTap: () {}),
+                  ListTile(title: const Text('Orders'), onTap: () {}),
+                  ListTile(title: const Text('Update Item'), onTap: () {}),
+                ],
+              ),
+            ),
           ],
         ),
       ),
       appBar: AppBar(
         title: const Text('Golden Bowl'),
         centerTitle: true,
-        elevation: 2,
-        backgroundColor: Colors.black87,
-        shape: Border(bottom: BorderSide(color: Colors.white24, width: 1)),
+        shape: const Border(bottom: BorderSide(color: Colors.white54)),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: TextButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                side: MaterialStateProperty.all(
-                  BorderSide(color: Colors.white),
-                ),
-                shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              child: const Text(
-                'Sign In',
-                style: TextStyle(color: Colors.white),
+          TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/signin');
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: Colors.white54),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
+            child: const Text('Sign In'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/register');
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: Colors.white54),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            child: const Text('Register'),
           ),
         ],
       ),
@@ -158,12 +163,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child:
                   items.isEmpty
-                      ? const Center(
-                        child: Text(
-                          'No items found',
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
-                        ),
-                      )
+                      ? const Center(child: Text('No items available.'))
                       : GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -187,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                                     items[index]['image'],
                                     fit: BoxFit.cover,
                                     width: double.infinity,
-                                    height: 100,
+                                    height: 120,
                                   ),
                                 ),
                                 Padding(
