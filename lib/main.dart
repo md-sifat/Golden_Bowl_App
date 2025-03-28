@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedPage = page;
     });
-    Navigator.pop(context); // Close the drawer after selection
+    Navigator.pop(context);
   }
 
   @override
@@ -145,6 +145,7 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   String selectedCategory = 'All Items';
   List items = [];
+  bool isLoading = false;
 
   final Map<String, String> apiUrls = {
     'All Items': 'https://golden-bowl-server.vercel.app/items',
@@ -161,6 +162,10 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> fetchItems() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       final url = apiUrls[selectedCategory]!;
       final response = await http.get(Uri.parse(url));
@@ -181,6 +186,10 @@ class _HomeContentState extends State<HomeContent> {
         items = [];
       });
       debugPrint('Error fetching items: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -214,76 +223,80 @@ class _HomeContentState extends State<HomeContent> {
             ],
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child:
-                items.isEmpty
-                    ? const Center(child: Text('No items available.'))
-                    : GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 0.75,
-                          ),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Image.network(
-                                  items[index]['image'],
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: 120,
-                                ),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Expanded(
+                child:
+                    items.isEmpty
+                        ? const Center(child: Text('No items available.'))
+                        : GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 0.75,
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      items[index]['name'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('Price: \$${items[index]['price']}'),
-                                    Text(
-                                      int.parse(
-                                                items[index]['stock']
-                                                    .toString(),
-                                              ) >
-                                              0
-                                          ? 'In Stock'
-                                          : 'Out of Stock',
-                                      style: TextStyle(
-                                        color:
-                                            int.parse(
-                                                      items[index]['stock']
-                                                          .toString(),
-                                                    ) >
-                                                    0
-                                                ? Colors.green
-                                                : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-          ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Image.network(
+                                      items[index]['image'],
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: 120,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          items[index]['name'],
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Price: \$${items[index]['price']}',
+                                        ),
+                                        Text(
+                                          int.parse(
+                                                    items[index]['stock']
+                                                        .toString(),
+                                                  ) >
+                                                  0
+                                              ? 'In Stock'
+                                              : 'Out of Stock',
+                                          style: TextStyle(
+                                            color:
+                                                int.parse(
+                                                          items[index]['stock']
+                                                              .toString(),
+                                                        ) >
+                                                        0
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+              ),
         ],
       ),
     );

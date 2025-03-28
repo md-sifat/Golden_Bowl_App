@@ -15,6 +15,7 @@ class _AddItemPageState extends State<AddItemPage> {
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
   String selectedCategory = 'Food';
+  bool _isLoading = false; // Loading state
 
   final List<String> categories = ['Food', 'Drink', 'Dessert', 'Beverage'];
   final String defaultImageUrl =
@@ -30,6 +31,10 @@ class _AddItemPageState extends State<AddItemPage> {
       return;
     }
 
+    setState(() {
+      _isLoading = true; // Show loader
+    });
+
     final response = await http.post(
       Uri.parse('https://golden-bowl-server.vercel.app/items'),
       headers: {'Content-Type': 'application/json'},
@@ -44,6 +49,10 @@ class _AddItemPageState extends State<AddItemPage> {
         'stock': int.tryParse(_stockController.text) ?? 0,
       }),
     );
+
+    setState(() {
+      _isLoading = false; // Hide loader after request completes
+    });
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(
@@ -108,7 +117,20 @@ class _AddItemPageState extends State<AddItemPage> {
               },
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: addItem, child: const Text('Add Item')),
+            ElevatedButton(
+              onPressed: _isLoading ? null : addItem,
+              child:
+                  _isLoading
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : const Text('Add Item'),
+            ),
           ],
         ),
       ),
