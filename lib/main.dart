@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'signin_page.dart';
 import 'register_page.dart';
+import 'addItem.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +39,7 @@ class _HomePageState extends State<HomePage> {
   List items = [];
 
   final Map<String, String> apiUrls = {
-    'All Items': 'http://localhost:3000/api/all',
+    'All Items': 'https://golden-bowl-server.vercel.app/items',
     'Tea': 'http://localhost:3000/api/tea',
     'Snacks': 'http://localhost:3000/api/snacks',
     'Meals': 'http://localhost:3000/api/meals',
@@ -52,16 +53,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchItems() async {
-    final url = apiUrls[selectedCategory]!;
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      setState(() {
-        items = json.decode(response.body);
-      });
-    } else {
+    try {
+      final url = apiUrls[selectedCategory]!; // Make sure the URL is valid
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        List<dynamic> decodedData = json.decode(response.body);
+        setState(() {
+          items = decodedData.isNotEmpty ? decodedData : [];
+        });
+        debugPrint('Fetched items: ${items.length}');
+      } else {
+        setState(() {
+          items = [];
+        });
+      }
+    } catch (e) {
       setState(() {
         items = [];
       });
+      debugPrint('Error fetching items: $e');
     }
   }
 
