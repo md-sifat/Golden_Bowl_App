@@ -13,33 +13,55 @@ class _AddItemPageState extends State<AddItemPage> {
   final _itemNameController = TextEditingController();
   final _imageUrlController = TextEditingController();
   final _priceController = TextEditingController();
+  final _stockController = TextEditingController();
   String selectedCategory = 'Food';
-  String stockStatus = 'In Stock';
 
   final List<String> categories = ['Food', 'Drink', 'Dessert', 'Beverage'];
-  final List<String> stockStatuses = ['In Stock', 'Out of Stock'];
+  final String defaultImageUrl =
+      'https://via.placeholder.com/150'; // Default image URL
 
   Future<void> addItem() async {
+    if (_itemNameController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _stockController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields')),
+      );
+      return;
+    }
+
     final response = await http.post(
       Uri.parse('https://golden-bowl-server.vercel.app/items'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'name': _itemNameController.text,
-        'image': _imageUrlController.text,
+        'image':
+            _imageUrlController.text.isNotEmpty
+                ? _imageUrlController.text
+                : defaultImageUrl, // Use default if empty
         'category': selectedCategory,
-        'price': double.tryParse(_priceController.text) ?? 0.0,
-        'stock': stockStatus == 'In Stock' ? 1 : 0,
+        'price': int.tryParse(_priceController.text) ?? 0,
+        'stock': int.tryParse(_stockController.text) ?? 0,
       }),
     );
+
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Item added successfully')));
+      _clearFields();
     } else {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to add item')));
     }
+  }
+
+  void _clearFields() {
+    _itemNameController.clear();
+    _imageUrlController.clear();
+    _priceController.clear();
+    _stockController.clear();
   }
 
   @override
@@ -64,6 +86,11 @@ class _AddItemPageState extends State<AddItemPage> {
               decoration: const InputDecoration(labelText: 'Price'),
               keyboardType: TextInputType.number,
             ),
+            TextField(
+              controller: _stockController,
+              decoration: const InputDecoration(labelText: 'Stock'),
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: 16),
             DropdownButton<String>(
               value: selectedCategory,
@@ -77,22 +104,6 @@ class _AddItemPageState extends State<AddItemPage> {
               onChanged: (value) {
                 setState(() {
                   selectedCategory = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButton<String>(
-              value: stockStatus,
-              items:
-                  stockStatuses.map((status) {
-                    return DropdownMenuItem<String>(
-                      value: status,
-                      child: Text(status),
-                    );
-                  }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  stockStatus = value!;
                 });
               },
             ),
