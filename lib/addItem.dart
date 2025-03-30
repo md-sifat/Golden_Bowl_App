@@ -14,12 +14,11 @@ class _AddItemPageState extends State<AddItemPage> {
   final _imageUrlController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
-  String selectedCategory = 'Food';
+  String selectedCategory = 'Meal';
   bool _isLoading = false; // Loading state
 
-  final List<String> categories = ['Food', 'Drink', 'Dessert', 'Beverage'];
-  final String defaultImageUrl =
-      'https://via.placeholder.com/150'; // Default image URL
+  final List<String> categories = ['Meal', 'Drink', 'Snack', 'Tea'];
+  final String defaultImageUrl = 'https://i.ibb.co.com/fmRrS07/default2.jpg';
 
   Future<void> addItem() async {
     if (_itemNameController.text.isEmpty ||
