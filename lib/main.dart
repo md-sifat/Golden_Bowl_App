@@ -5,6 +5,7 @@ import 'signin_page.dart';
 import 'register_page.dart';
 import 'addItem.dart';
 import 'carts.dart';
+import 'global.dart' as globals;
 
 void main() {
   runApp(const MyApp());
@@ -72,55 +73,83 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: Column(
           children: [
+            const SizedBox(height: 80),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.black87,
-                border: Border.all(color: Colors.white54),
+                color: Colors.transparent,
+                border: Border.all(color: Colors.transparent),
               ),
               child: const Text(
                 'Golden Bowl',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: Colors.white, fontSize: 25),
               ),
             ),
             Expanded(
               child: ListView(
                 children: [
                   ListTile(
-                    title: const Text('Home'),
-                    onTap:
-                        () => _changePage(
-                          const HomeContent(addToCart: _dummyFunction),
-                        ),
+                    leading: const Icon(Icons.home, color: Colors.white),
+                    title: InkWell(
+                      onTap:
+                          () => _changePage(
+                            const HomeContent(addToCart: _dummyFunction),
+                          ),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Home'),
+                      ),
+                    ),
                   ),
                   ListTile(
-                    title: const Text('Carts'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CartPage(cartItems: cart),
-                        ),
-                      );
-                    },
+                    leading: const Icon(
+                      Icons.shopping_cart,
+                      color: Colors.white,
+                    ),
+                    title: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CartPage(cartItems: cart),
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Carts'),
+                      ),
+                    ),
                   ),
                   ListTile(
-                    title: const Text('Add Items'),
-                    onTap: () {
-                      Navigator.pushNamed(context, '/addItem');
-                    },
+                    leading: const Icon(Icons.add_circle, color: Colors.white),
+                    title: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/addItem');
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Add Items'),
+                      ),
+                    ),
                   ),
                   ListTile(
-                    title: const Text('Orders'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CartPage(cartItems: cart),
-                        ),
-                      );
-                    },
+                    leading: const Icon(Icons.list_alt, color: Colors.white),
+                    title: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CartPage(cartItems: cart),
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Orders'),
+                      ),
+                    ),
                   ),
                 ],
               ),

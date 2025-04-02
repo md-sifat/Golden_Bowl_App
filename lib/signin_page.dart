@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'register_page.dart';
+import 'global.dart' as globals;
+import 'main.dart' as main;
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -10,6 +14,102 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   String? selectedRole;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _emailError;
+  String? _passwordError;
+  bool _isPasswordVisible = false;
+
+  final _emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  );
+
+  final _passwordRegex = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$',
+  );
+
+  bool _isFormValid() {
+    return _emailError == null &&
+        _passwordError == null &&
+        _emailController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        selectedRole != null;
+  }
+
+  void _validateEmail(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _emailError = 'Email is required';
+      } else if (!_emailRegex.hasMatch(value)) {
+        _emailError = 'Please enter a valid email';
+      } else {
+        _emailError = null;
+      }
+    });
+  }
+
+  void _validatePassword(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _passwordError = 'Password is required';
+      } else if (!_passwordRegex.hasMatch(value)) {
+        _passwordError =
+            'Password must be 8+ characters with uppercase, lowercase, and number';
+      } else {
+        _passwordError = null;
+      }
+    });
+  }
+
+  Future<void> _signIn() async {
+    if (!_isFormValid()) return;
+
+    final url = Uri.parse(
+      'https://golden-bowl-server.vercel.app/users/role',
+    ).replace(
+      queryParameters: {'email': _emailController.text, 'role': selectedRole},
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
+        if (userData['password'] == _passwordController.text) {
+          globals.setUser(userData, selectedRole);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Sign in successful!')));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const main.HomePage()),
+          );
+        } else {
+          globals.clearUser();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Incorrect password')));
+        }
+      } else {
+        globals.clearUser();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('User not found')));
+      }
+    } catch (e) {
+      globals.clearUser();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +122,40 @@ class _SignInPageState extends State<SignInPage> {
           children: [
             const Text('Email'),
             TextField(
-              decoration: InputDecoration(border: OutlineInputBorder()),
+              controller: _emailController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                errorText: _emailError,
+              ),
+              onChanged: _validateEmail,
             ),
             const SizedBox(height: 16),
             const Text('Password'),
             TextField(
-              decoration: InputDecoration(border: OutlineInputBorder()),
+              controller: _passwordController,
+              obscureText: !_isPasswordVisible,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                errorText: _passwordError,
+                suffixIcon: GestureDetector(
+                  onLongPress: () {
+                    setState(() {
+                      _isPasswordVisible = true;
+                    });
+                  },
+                  onLongPressUp: () {
+                    setState(() {
+                      _isPasswordVisible = false;
+                    });
+                  },
+                  child: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                ),
+              ),
+              onChanged: _validatePassword,
             ),
             const SizedBox(height: 16),
             const Text('Select Role:'),
@@ -45,7 +173,7 @@ class _SignInPageState extends State<SignInPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: selectedRole == null ? null : () {},
+              onPressed: _isFormValid() ? _signIn : null,
               child: const Text('Sign In'),
             ),
             TextButton(
