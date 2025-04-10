@@ -54,7 +54,7 @@ class _SignInPageState extends State<SignInPage> {
         _passwordError = 'Password is required';
       } else if (!_passwordRegex.hasMatch(value)) {
         _passwordError =
-            'Password must be 8+ characters with uppercase, lowercase, and number';
+            'Password must contain 8+ characters with uppercase, lowercase, and number but no special characters';
       } else {
         _passwordError = null;
       }
