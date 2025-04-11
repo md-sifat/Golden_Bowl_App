@@ -35,8 +35,16 @@ class _OrdersPageState extends State<OrdersPage> {
           SnackBar(content: Text('Failed to fetch orders: ${response.body}')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error fetching orders: $e')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
