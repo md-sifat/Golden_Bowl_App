@@ -6,6 +6,7 @@ A new Flutter project.
 
 This project is a starting point for a Flutter application. This project aims to provide a smoother experience for a restaurant owner to manage their hierarchical sturcturs and mainly focusing on greater experience for the customers 
 
+This app has some functionalities such as menu view.
 Here are a few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
