@@ -1,18 +1,20 @@
+// receipt_generator.dart
 import 'package:flutter/material.dart';
+import 'cart.dart'; // Import the cart.dart file
 
 class ReceiptGenerator {
-  final List<OrderItem> items;
+  final Cart cart; // Reference to the Cart
   final double taxRate;
   final double discount;
 
   ReceiptGenerator({
-    required this.items,
+    required this.cart,
     this.taxRate = 0.0,
     this.discount = 0.0,
   });
 
   double get subtotal {
-    return items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    return cart.items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
   }
 
   double get tax {
@@ -26,7 +28,7 @@ class ReceiptGenerator {
   String generateReceipt() {
     final buffer = StringBuffer();
     buffer.writeln('--- Golden Bowl Receipt ---');
-    for (var item in items) {
+    for (var item in cart.items) {
       buffer.writeln(
         '${item.name} x${item.quantity} - \$${(item.price * item.quantity).toStringAsFixed(2)}',
       );
@@ -40,29 +42,4 @@ class ReceiptGenerator {
     buffer.writeln('Thank you for dining with us!');
     return buffer.toString();
   }
-}
-
-class OrderItem {
-  final String name;
-  final double price;
-  final int quantity;
-
-  OrderItem({required this.name, required this.price, required this.quantity});
-}
-
-// testing
-void main() {
-  final orders = [
-    OrderItem(name: 'Fried Rice', price: 8.99, quantity: 2),
-    OrderItem(name: 'Spring Rolls', price: 4.50, quantity: 3),
-    OrderItem(name: 'Orange Chicken', price: 12.99, quantity: 1),
-  ];
-
-  final receiptGenerator = ReceiptGenerator(
-    items: orders,
-    taxRate: 0.07,
-    discount: 5.0,
-  );
-
-  print(receiptGenerator.generateReceipt());
 }
