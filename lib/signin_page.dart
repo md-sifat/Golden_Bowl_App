@@ -63,7 +63,6 @@ class _SignInPageState extends State<SignInPage> {
   Future<void> _signIn() async {
     if (!_isFormValid()) return;
 
-    // Step 1: Verify user credentials
     final userUrl = Uri.parse(
       'https://golden-bowl-server.vercel.app/users/role',
     ).replace(
@@ -76,13 +75,13 @@ class _SignInPageState extends State<SignInPage> {
       if (userResponse.statusCode == 200) {
         final userData = jsonDecode(userResponse.body);
         if (userData['password'] == _passwordController.text) {
-          // Step 2: Update the session in the 'sessions' collection
           final sessionUrl = Uri.parse(
             'https://golden-bowl-server.vercel.app/sessions/active',
           );
           final sessionBody = jsonEncode({
             'user': userData,
             'role': selectedRole,
+            'loggedIn': true,
           });
 
           final sessionResponse = await http.put(

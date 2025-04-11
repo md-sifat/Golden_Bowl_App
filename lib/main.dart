@@ -5,7 +5,6 @@ import 'signin_page.dart';
 import 'register_page.dart';
 import 'addItem.dart';
 import 'carts.dart';
-import 'global.dart' as globals;
 
 void main() {
   runApp(const MyApp());
@@ -42,9 +41,60 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Widget _selectedPage = const HomeContent(addToCart: _dummyFunction);
+  Widget _selectedPage = const HomeContent(
+    addToCart: _dummyFunction,
+    isLoggedIn: false,
+    userRole: null,
+  );
   List<Map<String, dynamic>> cart = [];
   int cartItemCount = 0;
+  Map<String, dynamic>? currentUser;
+  String? currentRole;
+  bool? isLoggedIn;
+  bool isLoadingSession = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSession();
+  }
+
+  Future<void> _fetchSession() async {
+    setState(() {
+      isLoadingSession = true;
+    });
+    try {
+      final url = Uri.parse(
+        'https://golden-bowl-server.vercel.app/sessions/active',
+      );
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final sessionData = jsonDecode(response.body);
+        setState(() {
+          isLoggedIn = sessionData['loggedIn'] ?? false;
+          currentUser = sessionData['user'];
+          currentRole = sessionData['role'];
+        });
+      } else {
+        setState(() {
+          isLoggedIn = false;
+          currentUser = null;
+          currentRole = null;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoggedIn = false;
+        currentUser = null;
+        currentRole = null;
+      });
+    } finally {
+      setState(() {
+        isLoadingSession = false;
+      });
+    }
+  }
 
   void _changePage(Widget page) {
     setState(() {
@@ -67,8 +117,50 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _logout() async {
+    try {
+      final url = Uri.parse(
+        'https://golden-bowl-server.vercel.app/sessions/active',
+      );
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user': currentUser,
+          'role': currentRole,
+          'loggedIn': false,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          cart.clear();
+          cartItemCount = 0;
+          isLoggedIn = false;
+        });
+        await _fetchSession();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to logout')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isLoadingSession) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       drawer: Drawer(
         child: Column(
@@ -94,11 +186,18 @@ class _HomePageState extends State<HomePage> {
                     title: InkWell(
                       onTap:
                           () => _changePage(
-                            const HomeContent(addToCart: _dummyFunction),
+                            const HomeContent(
+                              addToCart: _dummyFunction,
+                              isLoggedIn: false,
+                              userRole: null,
+                            ),
                           ),
                       child: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Home'),
+                        child: Text(
+                          'Home',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
@@ -108,46 +207,108 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                     ),
                     title: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CartPage(cartItems: cart),
+                      onTap:
+                          isLoggedIn == true && currentRole == 'Customer'
+                              ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => CartPage(cartItems: cart),
+                                  ),
+                                );
+                              }
+                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Carts',
+                          style: TextStyle(
+                            color:
+                                isLoggedIn == true && currentRole == 'Customer'
+                                    ? Colors.white
+                                    : Colors.grey,
                           ),
-                        );
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Carts'),
+                        ),
                       ),
                     ),
                   ),
                   ListTile(
                     leading: const Icon(Icons.add_circle, color: Colors.white),
                     title: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/addItem');
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Add Items'),
+                      onTap:
+                          isLoggedIn == true && currentRole == 'Manager'
+                              ? () => Navigator.pushNamed(context, '/addItem')
+                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Add Items',
+                          style: TextStyle(
+                            color:
+                                isLoggedIn == true && currentRole == 'Manager'
+                                    ? Colors.white
+                                    : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.update, color: Colors.white),
+                    title: InkWell(
+                      onTap:
+                          isLoggedIn == true && currentRole == 'Manager'
+                              ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Update Items page not implemented yet',
+                                    ),
+                                  ),
+                                );
+                              }
+                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Update Items',
+                          style: TextStyle(
+                            color:
+                                isLoggedIn == true && currentRole == 'Manager'
+                                    ? Colors.white
+                                    : Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                   ListTile(
                     leading: const Icon(Icons.list_alt, color: Colors.white),
                     title: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CartPage(cartItems: cart),
+                      onTap:
+                          isLoggedIn == true && currentRole == 'Chef'
+                              ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => CartPage(cartItems: cart),
+                                  ),
+                                );
+                              }
+                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Orders',
+                          style: TextStyle(
+                            color:
+                                isLoggedIn == true && currentRole == 'Chef'
+                                    ? Colors.white
+                                    : Colors.grey,
                           ),
-                        );
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Orders'),
+                        ),
                       ),
                     ),
                   ),
@@ -161,32 +322,56 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Golden Bowl'),
         centerTitle: true,
         actions: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white, width: 1.5),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signin');
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                minimumSize: const Size(0, 24),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          if (isLoggedIn == true) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1.5),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: const [
-                  Icon(Icons.login, color: Colors.white, size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    "Log In",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+              child: Text(
+                currentUser != null
+                    ? currentUser!['username'] ?? 'User'
+                    : 'User',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(width: 10),
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.red),
+              onPressed: _logout,
+            ),
+          ],
+          if (isLoggedIn != true)
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1.5),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/signin');
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
                   ),
-                ],
+                  minimumSize: const Size(0, 24),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.login, color: Colors.white, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      "Log In",
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
           const SizedBox(width: 10),
           IconButton(
             icon: Badge(
@@ -196,26 +381,43 @@ class _HomePageState extends State<HomePage> {
               ),
               child: const Icon(Icons.shopping_cart),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CartPage(cartItems: cart),
-                ),
-              );
-            },
+            onPressed:
+                isLoggedIn == true && currentRole == 'Customer'
+                    ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CartPage(cartItems: cart),
+                        ),
+                      );
+                    }
+                    : null,
           ),
         ],
       ),
-      body: HomeContent(addToCart: addToCart),
+      body: HomeContent(
+        addToCart:
+            isLoggedIn == true && currentRole == 'Customer'
+                ? addToCart
+                : _dummyFunction,
+        isLoggedIn: isLoggedIn ?? false,
+        userRole: currentRole,
+      ),
     );
   }
 }
 
 class HomeContent extends StatefulWidget {
   final Function(Map<String, dynamic>) addToCart;
+  final bool isLoggedIn;
+  final String? userRole;
 
-  const HomeContent({super.key, required this.addToCart});
+  const HomeContent({
+    super.key,
+    required this.addToCart,
+    required this.isLoggedIn,
+    required this.userRole,
+  });
 
   @override
   State<HomeContent> createState() => _HomeContentState();
@@ -381,10 +583,24 @@ class _HomeContentState extends State<HomeContent> {
                                               ),
                                               padding: EdgeInsets.zero,
                                             ),
-                                            onPressed:
-                                                () => widget.addToCart(
-                                                  items[index],
-                                                ),
+                                            onPressed: () {
+                                              if (widget.isLoggedIn &&
+                                                  widget.userRole ==
+                                                      'Customer') {
+                                                widget.addToCart(items[index]);
+                                              } else {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Only customers can place an order',
+                                                    ),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            },
                                             child: const Text(
                                               'Add to Cart',
                                               style: TextStyle(fontSize: 13),
