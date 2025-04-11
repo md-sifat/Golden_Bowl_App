@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'register_page.dart';
-import 'global.dart' as globals;
 import 'main.dart' as main;
 
 class SignInPage extends StatefulWidget {
@@ -64,40 +63,58 @@ class _SignInPageState extends State<SignInPage> {
   Future<void> _signIn() async {
     if (!_isFormValid()) return;
 
-    final url = Uri.parse(
+    // Step 1: Verify user credentials
+    final userUrl = Uri.parse(
       'https://golden-bowl-server.vercel.app/users/role',
     ).replace(
       queryParameters: {'email': _emailController.text, 'role': selectedRole},
     );
 
     try {
-      final response = await http.get(url);
+      final userResponse = await http.get(userUrl);
 
-      if (response.statusCode == 200) {
-        final userData = jsonDecode(response.body);
+      if (userResponse.statusCode == 200) {
+        final userData = jsonDecode(userResponse.body);
         if (userData['password'] == _passwordController.text) {
-          globals.setUser(userData, selectedRole);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Sign in successful!')));
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const main.HomePage()),
+          // Step 2: Update the session in the 'sessions' collection
+          final sessionUrl = Uri.parse(
+            'https://golden-bowl-server.vercel.app/sessions/active',
           );
+          final sessionBody = jsonEncode({
+            'user': userData,
+            'role': selectedRole,
+          });
+
+          final sessionResponse = await http.put(
+            sessionUrl,
+            headers: {'Content-Type': 'application/json'},
+            body: sessionBody,
+          );
+
+          if (sessionResponse.statusCode == 200) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Sign in successful!')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const main.HomePage()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to update session')),
+            );
+          }
         } else {
-          globals.clearUser();
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Incorrect password')));
         }
       } else {
-        globals.clearUser();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('User not found')));
       }
     } catch (e) {
-      globals.clearUser();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
