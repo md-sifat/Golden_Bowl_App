@@ -83,3 +83,10 @@ lib/
 
 └── orders.dart  # Main OrdersPage UI & logic
 
+## 🧑‍💻 Author
+
+Golden Bowl Flutter Dev Team
+
+## 📜 License
+
+This project is licensed for educational or internal business use only. Contact the owner for reuse or distribution.
