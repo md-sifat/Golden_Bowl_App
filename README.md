@@ -15,3 +15,9 @@ Here are a few resources to get you started if this is your first Flutter projec
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+# 🍲 OrdersPage - Golden Bowl Admin App
+
+This Flutter screen allows admins to view and manage customer orders from the **Golden Bowl** backend API. It fetches order data, displays it in a user-friendly UI, and allows updating order statuses (Confirm or Cancel).
+
+---
