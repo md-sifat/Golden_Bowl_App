@@ -62,3 +62,17 @@ dependencies:
     Updates the order status on button tap and shows a Snackbar.
 
     Reloads the updated order list automatically.
+
+## 🧪 Sample API Response
+
+[
+  {
+    "_id": "12345",
+    "items": [
+      { "name": "Chicken Biryani" },
+      { "name": "Mango Lassi" }
+    ],
+    "totalPrice": 12.99,
+    "status": "pending"
+  }
+]
