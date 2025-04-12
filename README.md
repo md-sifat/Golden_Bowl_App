@@ -77,6 +77,12 @@ dependencies:
   }
 ]
 
+## 🧪 Sample API Routes : 
+https://golden-bowl-server.vercel.app/
+https://golden-bowl-server.vercel.app/items
+https://golden-bowl-server.vercel.app/users
+https://golden-bowl-server.vercel.app/items/drinks
+
 ## 📂 File Structure
 
 lib/
