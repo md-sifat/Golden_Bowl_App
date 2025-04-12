@@ -50,3 +50,15 @@ dependencies:
     sdk: flutter
   http: ^0.14.0
 ```
+
+## 🛠️ How It Works
+
+    On screen load, it fetches orders from the API.
+
+    Displays each order in a styled card with all relevant info.
+
+    If an order is pending, shows Confirm and Cancel buttons.
+
+    Updates the order status on button tap and shows a Snackbar.
+
+    Reloads the updated order list automatically.
