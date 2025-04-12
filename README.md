@@ -21,3 +21,19 @@ samples, guidance on mobile development, and a full API reference.
 This Flutter screen allows admins to view and manage customer orders from the **Golden Bowl** backend API. It fetches order data, displays it in a user-friendly UI, and allows updating order statuses (Confirm or Cancel).
 
 ---
+
+## 🚀 Features
+
+- Fetch orders from REST API (`https://golden-bowl-server.vercel.app/orders`)
+- Display each order with:
+  - Order ID
+  - Items
+  - Total price
+  - Status (with color indicators)
+- Update order status to:
+  - ✅ `completed`
+  - ❌ `canceled`
+- Re-fetches order list after each status update
+- Responsive UI with loading and error handling
+
+---
