@@ -8,6 +8,7 @@ class OrdersPage extends StatefulWidget {
   @override
   State<OrdersPage> createState() => _OrdersPageState();
 }
+
 class _OrdersPageState extends State<OrdersPage> {
   List<dynamic> orders = [];
   bool isLoading = true;
@@ -16,5 +17,33 @@ class _OrdersPageState extends State<OrdersPage> {
   void initState() {
     super.initState();
     fetchOrders();
+  }
+
+    Future<void> fetchOrders() async {
+    setState(() {
+      isLoading = true;
+    });
+          try {
+      final url = Uri.parse('https://golden-bowl-server.vercel.app/orders');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          orders = jsonDecode(response.body);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch orders: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error fetching orders: $e')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 }
