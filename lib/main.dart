@@ -5,6 +5,8 @@ import 'signin_page.dart';
 import 'register_page.dart';
 import 'addItem.dart';
 import 'carts.dart';
+import 'orders.dart';
+import 'update_item.dart';
 
 void main() {
   runApp(const MyApp());
@@ -214,7 +216,10 @@ class _HomePageState extends State<HomePage> {
                                   context,
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => CartPage(cartItems: cart),
+                                        (context) => CartPage(
+                                          cartItems: cart,
+                                          currentUser: currentUser,
+                                        ),
                                   ),
                                 );
                               }
@@ -260,11 +265,11 @@ class _HomePageState extends State<HomePage> {
                       onTap:
                           isLoggedIn == true && currentRole == 'Manager'
                               ? () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Update Items page not implemented yet',
-                                    ),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const UpdateItemsPage(),
                                   ),
                                 );
                               }
@@ -292,8 +297,7 @@ class _HomePageState extends State<HomePage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder:
-                                        (context) => CartPage(cartItems: cart),
+                                    builder: (context) => const OrdersPage(),
                                   ),
                                 );
                               }
@@ -387,7 +391,11 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CartPage(cartItems: cart),
+                          builder:
+                              (context) => CartPage(
+                                cartItems: cart,
+                                currentUser: currentUser,
+                              ),
                         ),
                       );
                     }
