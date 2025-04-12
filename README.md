@@ -37,3 +37,16 @@ This Flutter screen allows admins to view and manage customer orders from the **
 - Responsive UI with loading and error handling
 
 ---
+
+## 📦 Dependencies
+
+- [`http`](https://pub.dev/packages/http): For making network requests.
+- [`flutter/material.dart`](https://api.flutter.dev/flutter/material/material-library.html): Flutter's core UI toolkit.
+
+Add to `pubspec.yaml`:
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.14.0
+```
