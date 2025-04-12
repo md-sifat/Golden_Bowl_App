@@ -76,3 +76,10 @@ dependencies:
     "status": "pending"
   }
 ]
+
+## 📂 File Structure
+
+lib/
+
+└── orders.dart  # Main OrdersPage UI & logic
+
