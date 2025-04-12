@@ -65,6 +65,9 @@ dependencies:
 
 ## 🧪 Sample API Response
 
+Below is an example response from the `GET /orders` endpoint, showing a single order with its details:
+
+```json
 [
   {
     "_id": "12345",
@@ -77,11 +80,12 @@ dependencies:
   }
 ]
 
-## 🧪 Sample API Routes : 
-https://golden-bowl-server.vercel.app/
-https://golden-bowl-server.vercel.app/items
-https://golden-bowl-server.vercel.app/users
-https://golden-bowl-server.vercel.app/items/drinks
+## 🧪 Sample API Routes
+
+- `https://golden-bowl-server.vercel.app/` - Base URL for the API.
+- `https://golden-bowl-server.vercel.app/items` - Fetch all menu items.
+- `https://golden-bowl-server.vercel.app/users` - Fetch all users (admin access).
+- `https://golden-bowl-server.vercel.app/items/drinks` - Fetch items in the Drinks category.
 
 ## 📂 File Structure
 
