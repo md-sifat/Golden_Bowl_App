@@ -46,4 +46,43 @@ class _OrdersPageState extends State<OrdersPage> {
       });
     }
   }
+
+  Future<void> updateOrderStatus(String orderId, String newStatus) async {
+    try {
+      final url = Uri.parse(
+        'https://golden-bowl-server.vercel.app/orders/$orderId',
+      );
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': newStatus}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Order $newStatus successfully')),
+          );
+          await fetchOrders(); // Refresh the list after update
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to update order: ${responseData['message']}',
+              ),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update order: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error updating order: $e')));
+    }
+  }
 }
