@@ -8,3 +8,13 @@ class OrdersPage extends StatefulWidget {
   @override
   State<OrdersPage> createState() => _OrdersPageState();
 }
+class _OrdersPageState extends State<OrdersPage> {
+  List<dynamic> orders = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+}
