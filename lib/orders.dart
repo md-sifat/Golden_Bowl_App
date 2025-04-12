@@ -85,4 +85,98 @@ class _OrdersPageState extends State<OrdersPage> {
       ).showSnackBar(SnackBar(content: Text('Error updating order: $e')));
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Orders'), centerTitle: true),
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : orders.isEmpty
+              ? const Center(child: Text('No orders found.'))
+              : ListView.builder(
+                itemCount: orders.length,
+                itemBuilder: (context, index) {
+                  final order = orders[index];
+                  final items = order['items'] as List<dynamic>;
+                  final totalPrice = order['totalPrice'];
+                  final status = order['status'];
+                  final orderId = order['_id'];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Order ID: $orderId',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Items: ${items.map((item) => item['name']).join(', ')}',
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Total Price: \$${totalPrice.toStringAsFixed(2)}',
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Status: $status',
+                            style: TextStyle(
+                              color:
+                                  status == 'pending'
+                                      ? Colors.orange
+                                      : status == 'completed'
+                                      ? Colors.green
+                                      : Colors.red,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (status ==
+                              'pending') // Show buttons only for pending orders
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  onPressed:
+                                      () => updateOrderStatus(
+                                        orderId,
+                                        'completed',
+                                      ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                  ),
+                                  child: const Text('Confirm'),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed:
+                                      () => updateOrderStatus(
+                                        orderId,
+                                        'canceled',
+                                      ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Cancel'),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+    );
+  }
 }
