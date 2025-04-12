@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'order_receipt.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -19,11 +20,11 @@ class _OrdersPageState extends State<OrdersPage> {
     fetchOrders();
   }
 
-    Future<void> fetchOrders() async {
+  Future<void> fetchOrders() async {
     setState(() {
       isLoading = true;
     });
-          try {
+    try {
       final url = Uri.parse('https://golden-bowl-server.vercel.app/orders');
       final response = await http.get(url);
 
@@ -65,6 +66,13 @@ class _OrdersPageState extends State<OrdersPage> {
             SnackBar(content: Text('Order $newStatus successfully')),
           );
           await fetchOrders(); // Refresh the list after update
+
+          // Generate and show receipt if order is confirmed
+          if (newStatus == 'completed') {
+            final order = orders.firstWhere((o) => o['_id'] == orderId);
+            final receipt = _generateReceipt(order);
+            _showReceiptDialog(receipt);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -84,6 +92,47 @@ class _OrdersPageState extends State<OrdersPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error updating order: $e')));
     }
+  }
+
+  String _generateReceipt(dynamic order) {
+    final items =
+        (order['items'] as List<dynamic>).map((item) {
+          return OrderItem(
+            name: item['name'],
+            price: (item['price'] ?? 0.0).toDouble(),
+            quantity: item['quantity'] ?? 1,
+          );
+        }).toList();
+
+    final receiptGenerator = ReceiptGenerator(
+      items: items,
+      taxRate: 0.07, // Example tax rate (7%)
+      discount: 0.0, // Example discount (adjust as needed)
+    );
+
+    return receiptGenerator.generateReceipt();
+  }
+
+  void _showReceiptDialog(String receipt) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Order Receipt'),
+            content: SingleChildScrollView(
+              child: Text(
+                receipt,
+                style: const TextStyle(fontFamily: 'Courier', fontSize: 14),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -141,7 +190,7 @@ class _OrdersPageState extends State<OrdersPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          if (status == 'pending') // Show buttons only for pending orders
+                          if (status == 'pending')
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [

@@ -63,22 +63,6 @@ dependencies:
 
     Reloads the updated order list automatically.
 
-## 🧪 Sample API Response
-
-Below is an example response from the `GET /orders` endpoint, showing a single order with its details:
-
-```json
-[
-  {
-    "_id": "12345",
-    "items": [
-      { "name": "Chicken Biryani" },
-      { "name": "Mango Lassi" }
-    ],
-    "totalPrice": 12.99,
-    "status": "pending"
-  }
-]
 
 ## 🧪 Sample API Routes
 
@@ -86,6 +70,24 @@ Below is an example response from the `GET /orders` endpoint, showing a single o
 - `https://golden-bowl-server.vercel.app/items` - Fetch all menu items.
 - `https://golden-bowl-server.vercel.app/users` - Fetch all users (admin access).
 - `https://golden-bowl-server.vercel.app/items/drinks` - Fetch items in the Drinks category.
+
+
+## 🧪 Sample API Response
+    Below is an example response from the `GET /orders` endpoint, showing a single order with its details:
+
+    ```json
+    [
+        {
+            "_id": "12345",
+            "items": [
+                { "name": "Chicken Biryani" },
+                { "name": "Mango Lassi" }
+            ],
+            "totalPrice": 12.99,
+            "status": "pending"
+        }
+    ]
+    ```
 
 ## 📂 File Structure
 
