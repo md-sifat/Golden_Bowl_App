@@ -141,8 +141,7 @@ class _OrdersPageState extends State<OrdersPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          if (status ==
-                              'pending') // Show buttons only for pending orders
+                          if (status == 'pending') // Show buttons only for pending orders
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
